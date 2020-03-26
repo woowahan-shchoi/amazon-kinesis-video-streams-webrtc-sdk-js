@@ -17,7 +17,8 @@
 
 <div class="container mt-3">
     <h1>KVS WebRTC Test Page</h1>
-    <p>This is the KVS Signaling Channel WebRTC test page. Use this page to connect to a signaling channel as either the MASTER or as a VIEWER.</p>
+    <p>This is the KVS Signaling Channel WebRTC test page. Use this page to connect to a signaling channel as either the
+        MASTER or as a VIEWER.</p>
 
     <div class="row loader"></div>
     <div id="main" class="d-none">
@@ -73,7 +74,8 @@
             <p><small>Set the desired video resolution and aspect ratio.</small></p>
             <div class="form-group">
                 <div class="form-check form-check">
-                    <input class="form-check-input" type="radio" name="resolution" id="widescreen" value="option1" checked>
+                    <input class="form-check-input" type="radio" name="resolution" id="widescreen" value="option1"
+                           checked>
                     <label class="form-check-label" for="widescreen">1280x720 <small>(16:9 widescreen)</small></label>
                 </div>
                 <div class="form-check form-check">
@@ -85,7 +87,8 @@
             <p><small>Control settings for ICE candidate generation.</small></p>
             <div class="form-group">
                 <div class="form-check form-check">
-                    <input class="form-check-input" type="radio" name="natTraversal" id="natTraversalEnabled" value="option2" checked>
+                    <input class="form-check-input" type="radio" name="natTraversal" id="natTraversalEnabled"
+                           value="option2" checked>
                     <label class="form-check-label" for="natTraversalEnabled">STUN/TURN</label>
                 </div>
                 <div class="form-check form-check">
@@ -93,15 +96,22 @@
                     <label class="form-check-label" for="forceTURN">TURN Only <small>(force cloud relay)</small></label>
                 </div>
                 <div class="form-check form-check">
-                    <input class="form-check-input" type="radio" name="natTraversal" id="natTraversalDisabled" value="option1">
+                    <input class="form-check-input" type="radio" name="natTraversal" id="natTraversalDisabled"
+                           value="option1">
                     <label class="form-check-label" for="natTraversalDisabled">Disabled</label>
                 </div>
             </div>
             <div class="form-group">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="checkbox" id="useTrickleICE" value="useTrickleICE" checked>
-                    <label class="form-check-label">Use trickle ICE <small>(not supported by Alexa devices)</small></label>
+                    <label class="form-check-label">Use trickle ICE <small>(not supported by Alexa
+                        devices)</small></label>
                 </div>
+            </div>
+            <h4>Camera</h4>
+            <div class="form-group">
+                <label>Number of Master's Cameras</label>
+                <input type="text" class="form-control" id="master-camera" placeholder="Number of Cameras (default 1)">
             </div>
             <div>
                 <button id="master-button" type="button" class="btn btn-primary">Start Master</button>
@@ -112,20 +122,27 @@
 
         <div id="master" class="d-none">
             <h2>Master</h2>
-            <div class="row">
-                <div class="col">
-                    <h5>Master Section</h5>
-                    <div class="video-container"><video class="local-view" autoplay playsinline controls muted /></div>
+            <div>
+                <div id="master-local" class="row">
+
                 </div>
-                <div class="col">
-                    <h5>Viewer Return Channel</h5>
-                    <div class="video-container"><video class="remote-view" autoplay playsinline controls /></div>
+                <div id="master-remote" class="row">
+
                 </div>
+                <!--                <div class="row">-->
+                <!--                    <h5>Master Section</h5>-->
+                <!--                    <div class="video-container"><video class="local-view" autoplay playsinline controls muted /></div>-->
+                <!--                </div>-->
+                <!--                <div class="row">-->
+                <!--                    <h5>Viewer Return Channel</h5>-->
+                <!--                    <div class="video-container"><video class="remote-view" autoplay playsinline controls /></div>-->
+                <!--                </div>-->
             </div>
             <div class="row datachannel">
                 <div class="col">
                     <div class="form-group">
-                      <textarea type="text" class="form-control local-message" placeholder="DataChannel Message"> </textarea>
+                    <textarea type="text" class="form-control local-message"
+                              placeholder="DataChannel Message"> </textarea>
                     </div>
                 </div>
                 <div class="col">
@@ -144,20 +161,31 @@
 
         <div id="viewer" class="d-none">
             <h2>Viewer</h2>
-            <div class="row">
-                <div class="col">
-                    <h5>Return Channel</h5>
-                    <div class="video-container"><video class="local-view" autoplay playsinline controls muted /></div>
+            <div>
+                <div id="viewer-local" class="row">
+
                 </div>
-                <div class="col">
-                    <h5>From Master</h5>
-                    <div class="video-container"><video class="remote-view" autoplay playsinline controls /></div>
+                <div id="viewer-remote" class="row">
+
                 </div>
+                <!--            <div class="col">-->
+                <!--                <h5>Return Channel</h5>-->
+                <!--                <div class="video-container">-->
+                <!--                    <video class="local-view" autoplay playsinline controls muted/>-->
+                <!--                </div>-->
+                <!--            </div>-->
+                <!--            <div class="col">-->
+                <!--                <h5>From Master</h5>-->
+                <!--                <div class="video-container">-->
+                <!--                    <video class="remote-view" autoplay playsinline controls/>-->
+                <!--                </div>-->
+                <!--            </div>-->
             </div>
             <div class="row datachannel">
                 <div class="col">
                     <div class="form-group">
-                      <textarea type="text" class="form-control local-message" placeholder="DataChannel Message"> </textarea>
+                    <textarea type="text" class="form-control local-message"
+                              placeholder="DataChannel Message"> </textarea>
                     </div>
                 </div>
                 <div class="col">

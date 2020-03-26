@@ -1,3 +1,15 @@
+function createVideoSection(displayName, viewClass) {
+    const element = `<div class="col">
+                    <h5>${displayName}</h5>
+                    <div class="video-container"><video class="${viewClass}" autoplay playsinline controls muted /></div>
+                </div>`;
+
+    const wrapperElement = document.createElement('div');
+    wrapperElement.innerHTML = element;
+
+    return wrapperElement.firstChild;
+}
+
 function configureLogging() {
     function log(level, messages) {
         const text = messages
@@ -55,6 +67,8 @@ function getFormValues() {
         endpoint: $('#endpoint').val() || null,
         secretAccessKey: $('#secretAccessKey').val(),
         sessionToken: $('#sessionToken').val() || null,
+        numberOfMasterCameras: $('#master-camera').val() || 1,
+        numberOfViewerCameras: 1,
     };
 }
 
@@ -86,8 +100,26 @@ $('#master-button').click(async () => {
     $('#form').addClass('d-none');
     $('#master').removeClass('d-none');
 
-    const localView = $('#master .local-view')[0];
-    const remoteView = $('#master .remote-view')[0];
+    const localView = [];
+    const remoteView = [];
+
+    for (let i = 0, len = getFormValues().numberOfMasterCameras; i < len; i++) {
+        const videoSection = createVideoSection('Master-' + i, 'local-view');
+        const parent = document.querySelector('#master-local');
+        parent.insertAdjacentElement("beforeend", videoSection);
+        localView.push(videoSection.querySelector('VIDEO'));
+    }
+
+    for (let i = 0, len = getFormValues().numberOfViewerCameras; i < len; i++) {
+        const videoSection = createVideoSection('FromViewer-' + i, 'remote-view');
+        const parent = document.querySelector('#master-remote');
+        parent.insertAdjacentElement("beforeend", videoSection);
+        remoteView.push(videoSection.querySelector('VIDEO'));
+    }
+
+    // const localView = $('#master .local-view')[0];
+    // const remoteView = $('#master .remote-view')[0];
+
     const localMessage = $('#master .local-message')[0];
     const remoteMessage = $('#master .remote-message')[0];
     const formValues = getFormValues();
@@ -112,8 +144,25 @@ $('#viewer-button').click(async () => {
     $('#form').addClass('d-none');
     $('#viewer').removeClass('d-none');
 
-    const localView = $('#viewer .local-view')[0];
-    const remoteView = $('#viewer .remote-view')[0];
+    const localView = [];
+    const remoteView = [];
+
+    for (let i = 0, len = getFormValues().numberOfViewerCameras; i < len; i++) {
+        const videoSection = createVideoSection('ReturnChannel-' + i, 'local-view');
+        const parent = document.querySelector('#viewer-local');
+        parent.insertAdjacentElement("beforeend", videoSection);
+        localView.push(videoSection.querySelector('VIDEO'));
+    }
+
+    for (let i = 0, len = getFormValues().numberOfMasterCameras; i < len; i++) {
+        const videoSection = createVideoSection('FromMaster-' + i, 'remote-view');
+        const parent = document.querySelector('#viewer-remote');
+        parent.insertAdjacentElement("beforeend", videoSection);
+        remoteView.push(videoSection.querySelector('VIDEO'));
+    }
+
+    // const localView = $('#viewer .local-view')[0];
+    // const remoteView = $('#viewer .remote-view')[0];
     const localMessage = $('#viewer .local-message')[0];
     const remoteMessage = $('#viewer .remote-message')[0];
     const formValues = getFormValues();

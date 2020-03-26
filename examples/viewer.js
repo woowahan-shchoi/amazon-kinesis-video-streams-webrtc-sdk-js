@@ -4,6 +4,9 @@
 const viewer = {};
 
 async function startViewer(localView, remoteView, formValues, onStatsReport, onRemoteDataMessage) {
+    const numberOfMasterCameras = remoteView.length;
+    let remoteViewCount = 0;
+
     viewer.localView = localView;
     viewer.remoteView = remoteView;
 
@@ -57,7 +60,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, onR
         .promise();
     const iceServers = [];
     if (!formValues.natTraversalDisabled && !formValues.forceTURN) {
-        iceServers.push({ urls: `stun:stun.kinesisvideo.${formValues.region}.amazonaws.com:443` });
+        iceServers.push({urls: `stun:stun.kinesisvideo.${formValues.region}.amazonaws.com:443`});
     }
     if (!formValues.natTraversalDisabled) {
         getIceServerConfigResponse.IceServerList.forEach(iceServer =>
@@ -101,6 +104,10 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, onR
         };
     }
 
+    for (let i = 0; i < numberOfMasterCameras; i++) {
+        viewer.peerConnection.addTransceiver('video');
+    }
+
     // Poll for connection stats
     viewer.peerConnectionStatsInterval = setInterval(() => viewer.peerConnection.getStats().then(onStatsReport), 1000);
 
@@ -109,9 +116,10 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, onR
 
         // Get a stream from the webcam, add it to the peer connection, and display it in the local view
         try {
-            viewer.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            viewer.localStream.getTracks().forEach(track => viewer.peerConnection.addTrack(track, viewer.localStream));
-            localView.srcObject = viewer.localStream;
+            viewer.localStream = [];
+            viewer.localStream[0] = await navigator.mediaDevices.getUserMedia(constraints);
+            viewer.localStream[0].getTracks().forEach(track => viewer.peerConnection.addTrack(track, viewer.localStream[0]));
+            localView[0].srcObject = viewer.localStream[0];
         } catch (e) {
             console.error('[VIEWER] Could not find webcam');
             return;
@@ -155,7 +163,7 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, onR
     });
 
     // Send any ICE candidates to the other peer
-    viewer.peerConnection.addEventListener('icecandidate', ({ candidate }) => {
+    viewer.peerConnection.addEventListener('icecandidate', ({candidate}) => {
         if (candidate) {
             console.log('[VIEWER] Generated ICE candidate');
 
@@ -176,13 +184,15 @@ async function startViewer(localView, remoteView, formValues, onStatsReport, onR
     });
 
     // As remote tracks are received, add them to the remote view
+    viewer.remoteStream = [];
     viewer.peerConnection.addEventListener('track', event => {
         console.log('[VIEWER] Received remote track');
-        if (remoteView.srcObject) {
-            return;
-        }
-        viewer.remoteStream = event.streams[0];
-        remoteView.srcObject = viewer.remoteStream;
+        // if (remoteView[remoteViewCount].srcObject) {
+        //     return;
+        // }
+        viewer.remoteStream[remoteViewCount] = event.streams[0];
+        remoteView[remoteViewCount].srcObject = event.streams[0];
+        remoteViewCount = (remoteViewCount + 1) % 2;
     });
 
     console.log('[VIEWER] Starting viewer connection');

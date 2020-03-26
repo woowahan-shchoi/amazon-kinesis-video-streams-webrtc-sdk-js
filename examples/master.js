@@ -5,12 +5,17 @@ const master = {
     signalingClient: null,
     peerConnectionByClientId: {},
     dataChannelByClientId: {},
-    localStream: null,
+    localStream: [],
     remoteStreams: [],
     peerConnectionStatsInterval: null,
 };
 
 async function startMaster(localView, remoteView, formValues, onStatsReport, onRemoteDataMessage) {
+    const numberOfMasterCameras = localView.length;
+    const numberOfViewerCameras = remoteView.length;
+    let remoteViewCount = 0;
+    let localViewCount = 0;
+
     master.localView = localView;
     master.remoteView = remoteView;
 
@@ -94,16 +99,37 @@ async function startMaster(localView, remoteView, formValues, onStatsReport, onR
         iceTransportPolicy: formValues.forceTURN ? 'relay' : 'all',
     };
 
-    const resolution = formValues.widescreen ? { width: { ideal: 1280 }, height: { ideal: 720 } } : { width: { ideal: 640 }, height: { ideal: 480 } };
-    const constraints = {
-        video: formValues.sendVideo ? resolution : false,
-        audio: formValues.sendAudio,
-    };
+    const resolution = formValues.widescreen
+        ? {width: {ideal: 1280}, height: {ideal: 720}}
+        : {
+            width: {ideal: 640},
+            height: {ideal: 480},
+        };
+    // const constraints = {
+    //     video: formValues.sendVideo ? resolution : false,
+    //     audio: formValues.sendAudio,
+    // };
 
     // Get a stream from the webcam and display it in the local view
     try {
-        master.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        localView.srcObject = master.localStream;
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        devices.forEach(device => {
+            if ('videoinput' === device.kind) {
+                const constraints = {
+                    video: formValues.sendVideo ? resolution : false,
+                    audio: formValues.sendAudio,
+                };
+
+                constraints.video.deviceId = {
+                    exact: device.deviceId,
+                };
+
+                navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+                    master.localStream.push(stream);
+                    master.localView[localViewCount].srcObject = master.localStream[localViewCount++];
+                });
+            }
+        });
     } catch (e) {
         console.error('[MASTER] Could not find webcam');
     }
@@ -155,13 +181,17 @@ async function startMaster(localView, remoteView, formValues, onStatsReport, onR
         // As remote tracks are received, add them to the remote view
         peerConnection.addEventListener('track', event => {
             console.log('[MASTER] Received remote track from client: ' + remoteClientId);
-            if (remoteView.srcObject) {
+            if (remoteView[0].srcObject) {
                 return;
             }
-            remoteView.srcObject = event.streams[0];
+            master.remoteStreams[0] = event.streams[0];
+            remoteView[0].srcObject = event.streams[0];
         });
-
-        master.localStream.getTracks().forEach(track => peerConnection.addTrack(track, master.localStream));
+        for (let i = 0; i < numberOfMasterCameras; i++) {
+            master.localStream[i].getTracks().forEach(track => {
+                peerConnection.addTrack(track, master.localStream[i]);
+            });
+        }
         await peerConnection.setRemoteDescription(offer);
 
         // Create an SDP answer to send back to the client
